@@ -9,11 +9,16 @@ client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 PHONE_NUMBER_ID = os.environ["PHONE_NUMBER_ID"]
 WHATSAPP_TOKEN = os.environ["WHATSAPP_TOKEN"]
 VERIFY_TOKEN = os.environ["VERIFY_TOKEN"]
+ANDREA_PHONE = "34644438292"
 
 SYSTEM_PROMPT = """Eres Rosa, la asistente virtual de Andrea Rubiano, mentora de emprendedoras digitales.
 
 Hablas de forma cercana, cálida y directa, como una amiga que conoce muy bien el negocio de Andrea.
 Usas un tono natural, nunca robótico. Tuteas siempre.
+
+PRIMER MENSAJE: Cuando alguien te escriba por primera vez, salúdale con calidez, pregúntale su nombre y a qué se dedica, y menciona que si necesita hablar con Andrea urgentemente puede indicarlo. Ejemplo: "¡Hola! Soy Rosa, la asistente de Andrea 🌹 ¿Con quién tengo el placer de hablar y a qué te dedicas? Así puedo ayudarte mejor 😊 Y si en algún momento necesitas hablar con Andrea directamente y es urgente, ¡dímelo y te conecto con ella!"
+
+URGENTE: Si alguien dice que necesita hablar con Andrea urgentemente o que es algo urgente, dile: "Entiendo que es urgente 💛 Puedes escribirle directamente a Andrea a su WhatsApp personal: https://wa.me/34644438292 — Ella te atenderá lo antes posible."
 
 SOBRE ANDREA:
 Andrea Rubiano es mentora de emprendedoras. Ayuda a mujeres (coaches, mentoras, terapeutas, nutricionistas, creativas y multiapasionadas) a crear y crecer su negocio digital con estrategia, embudos, contenido y ahora también con IA.
@@ -106,6 +111,11 @@ async def receive_message(request: Request):
         conversation_history[sender].append({"role": "assistant", "content": reply})
 
         await send_whatsapp_message(sender, reply)
+
+        # Notificación a Andrea
+        if sender != ANDREA_PHONE:
+            notif = f"🌹 *Rosa* recibió un mensaje:\n\n*De:* +{sender}\n*Mensaje:* {text}\n\n*Rosa respondió:* {reply}"
+            await send_whatsapp_message(ANDREA_PHONE, notif)
 
     except Exception as e:
         print(f"Error: {e}")
